@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threejs Journey Project 1 </title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      width: 100vw;
+    }
+
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.167.0/build/three.module.js",
+        "tsl-textures/": "https://cdn.jsdelivr.net/npm/tsl-textures@1.1.0/src/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas class="webgl"></canvas>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
