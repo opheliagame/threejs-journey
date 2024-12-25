@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import palette from "../colors/palette";
-import { convertHexToVec3 } from "../utils/colors";
-import FeltMaterial from "./feltMaterial";
+import palette from "../../../colors/palette";
+import { convertHexToVec3 } from "../../../utils/colors";
+import FeltMaterial from "../../material/feltMaterial";
 
 class My2DText extends THREE.Mesh {
   constructor(font, message) {

@@ -18,10 +18,13 @@ import { Color } from "three";
 import { WebGPURenderer } from "three/webgpu";
 import { convertHexToVec3 } from "../utils/colors";
 import palette from "../colors/palette";
-import My3DText from "./my3DText";
-import My2DText from "./my2DText";
-import MyScript from "./myScript";
-import FeltMaterial from "./feltMaterial";
+import My3DText from "./mesh/text/my3DText";
+import My2DText from "./mesh/text/my2DText";
+import MyScript from "./utils/myScript";
+import FeltMaterial from "./material/feltMaterial";
+import { random } from "../utils/math";
+import MyCamera from "./utils/my-camera";
+import SceneSequencer from "./scenes/sequencer";
 
 class World {
   constructor(container) {
@@ -35,36 +38,46 @@ class World {
       height: window.innerHeight,
     };
 
-    // this.camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-    // this.camera.position.set(0, 0, 10);
-    // this.scene.add(this.camera);
-    this.camera = new THREE.OrthographicCamera(
-      this.sizes.width / -2,
-      this.sizes.width / 2,
-      this.sizes.height / 2,
-      this.sizes.height / -2,
+    this.camera = new MyCamera(
+      75,
+      this.sizes.width / this.sizes.height,
       0.1,
-      10
+      2000
     );
-    this.camera.position.set(0, 0, 2);
+    this.camera.setPosition(0, 0, 1000);
+    this.camera.lookAt(0, 0, 0);
+    // this.camera = new THREE.OrthographicCamera(
+    //   this.sizes.width / -2,
+    //   this.sizes.width / 2,
+    //   this.sizes.height / 2,
+    //   this.sizes.height / -2,
+    //   0.1,
+    //   10
+    // );
+    // this.camera.position.set(0, 0, 2);
     this.scene.add(this.camera);
 
     this.uniforms = {
       time: { value: 1.0 },
     };
 
-    this.scene.background = new THREE.Color("black");
+    this.scene.background = new THREE.Color(random(palette));
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Soft light
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Strong directional light
-    directionalLight.position.set(5, 5, 5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4); // Strong directional light
+    directionalLight.position.set(100, 100, 100);
     this.scene.add(directionalLight);
 
     // this.addBackground();
 
-    this.script = new MyScript("script.txt");
+    this.sceneSequencer = new SceneSequencer(
+      this.scene,
+      this.sizes,
+      this.camera
+    );
+    this.sceneSequencer.playLinear();
 
     this.renderer = new WebGPURenderer({
       canvas: container,
@@ -76,6 +89,40 @@ class World {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     // this.raycaster = new Raycaster(this.scene, this.camera)
+    window.onresize = this.onWindowResize.bind(this);
+
+    // this.debug();
+  }
+
+  debug() {
+    const box = new THREE.BoxGeometry(10, 10, 10);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(box, material);
+    this.scene.add(cube);
+    cube.position.x = 0;
+    cube.position.y = 0;
+    cube.position.z = 0;
+
+    // const fontLoader = new FontLoader();
+    // fontLoader.load("fonts/Barriecito_Regular.json", (font) => {
+    //   console.log("Loaded font: ", font);
+
+    //   const text = new My3DText("Anushka Trivedi", font, 100, 0, 0, 0);
+    //   this.scene.add(text);
+    // });
+  }
+
+  onWindowResize() {
+    let windowHalfX = window.innerWidth / 2;
+
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.sizes.width = window.innerWidth;
+    this.sizes.height = window.innerHeight;
+
+    console.log("Resizing to ", this.sizes.width, this.sizes.height);
   }
 
   animate() {
@@ -83,14 +130,15 @@ class World {
       this.animate();
     });
 
-    if (this.script.lines.length > 0 && this.script.running == false) {
-      console.log("Running script");
-      this.script.run(this.scene, this.sizes);
-    }
+    // if (this.script.lines.length > 0 && this.script.running == false) {
+    //   console.log("Running script");
+    //   this.script.run(this.scene, this.sizes, this.camera);
+    // }
 
-    const t = this.clock.getElapsedTime() * 2;
+    const t = this.clock.getElapsedTime();
     this.uniforms.time.value = t;
-    this.controls.update();
+    this.controls.enabled = false;
+    // this.controls.update();
 
     this.scene.traverse((obj) => {
       if (obj.render) obj.render(t);
@@ -100,7 +148,7 @@ class World {
   }
 
   render() {
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.renderAsync(this.scene, this.camera);
   }
 
   addBackground() {

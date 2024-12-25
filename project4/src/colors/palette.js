@@ -11,7 +11,6 @@ let cohesiveColorPalettes = [
   ["#ff6f61", "#f0e68c", "#ffb6c1", "#32cd32", "#ff1493"],
 ];
 
-
-const palette = cohesiveColorPalettes[2]
+const palette = cohesiveColorPalettes[5];
 
 export default palette;

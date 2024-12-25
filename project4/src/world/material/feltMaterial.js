@@ -80,9 +80,10 @@ class FeltMaterial extends MeshStandardNodeMaterial {
     // Apply Noise to Color
     const noisyColor = mix(baseColor, vec3(0.5, 0.1, 0.1), amplifiedNoise);
 
-    let t = texture(feltTexture, div(uvNode, 10000));
+    let t = texture(feltTexture, div(uvNode, 1));
 
-    this.colorNode = mix(t, baseColor, 0.5);
+    // this.colorNode = mix(t, noisyColor, 0.5);
+    this.colorNode = noisyColor;
     // Adjust roughness and metalness for a soft, non-reflective surface
     this.roughnessNode = 1.0; // Fully rough
     this.metalnessNode = 0.0; // No metallic properties
