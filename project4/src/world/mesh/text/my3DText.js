@@ -61,7 +61,7 @@ class My3DText extends THREE.Mesh {
     const line = new THREE.LineSegments(
       // this.geometry,
       edges,
-      new THREE.LineBasicMaterial({ color: color ?? 0xffffff })
+      new THREE.LineBasicMaterial({ color: color ?? 0xffffff, linewidth: 10 })
     );
 
     line.position.x = this.position.x;

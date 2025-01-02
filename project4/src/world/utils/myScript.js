@@ -7,15 +7,17 @@ import MyTextFormatter from "./myTextFormatter";
 import { random } from "../../utils/math";
 import palette from "../../colors/palette";
 import FeltMaterial from "../material/feltMaterial";
-import { convertHexToVec3 } from "../../utils/colors";
+import { convertArrToVec3, convertHexToVec3 } from "../../utils/colors";
+import MyPlane from "../mesh/plane";
 
 class MyScript {
-  constructor(filePath) {
+  constructor(filePath, assetBasePath) {
     this.lines = [];
     this.currentIndex = 0;
     this.filePath = filePath;
     this.running = false;
     this.isLoaded = false;
+    this.assetBasePath = assetBasePath;
   }
 
   load() {
@@ -32,14 +34,39 @@ class MyScript {
               .split("\n")
               .map((line) => line.trim())
               .map((line) => (line.length > 0 ? line : ""))
-              .map((line) =>
-                line.split(":").length > 1
-                  ? {
-                      content: line.split(":")[1],
-                      duration: line.split(":")[0],
-                    }
-                  : { content: line, duration: 1 }
-              );
+              .map((line) => {
+                const parts = line.split(":");
+                let duration = 1,
+                  content = "",
+                  assets = [];
+
+                let hasDuration = !isNaN(parseFloat(parts[0]));
+
+                if (hasDuration) {
+                  duration = parts[0];
+                  if (parts.length > 1) {
+                    content = parts[1];
+                  }
+                } else {
+                  content = parts[0];
+                }
+
+                if (parts.length > 1 && !hasDuration) {
+                  // assets are parts[1]
+                  assets = parts[1].split(",").map((asset) => asset.trim());
+                }
+                if (parts.length > 1 && hasDuration) {
+                  // assets are parts[2]
+                  assets = parts[2].split(",").map((asset) => asset.trim());
+                }
+
+                return {
+                  content: content,
+                  duration: duration,
+                  assets: assets,
+                };
+              });
+
             console.log("loaded script: ", this.lines);
 
             console.log("script has ", this.lines.length, " lines");
@@ -126,7 +153,14 @@ class MyScript {
       );
       let randomColor = random(paletteWithoutBackground);
 
-      let material = new FeltMaterial(convertHexToVec3(randomColor), 100);
+      let color =
+        typeof randomColor == "string"
+          ? convertHexToVec3(randomColor)
+          : convertArrToVec3(randomColor);
+      let material = new FeltMaterial(color, 1);
+      // let material = new THREE.MeshStandardMaterial({
+      //   color: randomColor,
+      // });
 
       lines.forEach((formattedLine, index) => {
         console.log("Adding line ", index, formattedLine);
@@ -154,6 +188,16 @@ class MyScript {
         meshIds.push(textEdge.id);
       });
 
+      if (line.assets.length > 0) {
+        const assetMeshIds = this.animateAssets(
+          line.assets,
+          threeScene,
+          sizes,
+          camera
+        );
+        meshIds = meshIds.concat(assetMeshIds);
+      }
+
       const sceneDuration = line.duration;
       // pan the camera to a random point
       const panTo = new THREE.Vector3(
@@ -177,6 +221,33 @@ class MyScript {
         resolve();
       }, 1000 * sceneDuration);
     });
+  }
+
+  animateAssets(assets, threeScene, sizes, camera) {
+    let meshIds = [];
+
+    assets.forEach((asset) => {
+      const assetPath = `${this.assetBasePath}/${asset}`;
+      const isImage =
+        assetPath.endsWith("png") ||
+        assetPath.endsWith("jpg") ||
+        assetPath.endsWith("jpeg");
+
+      const isVideo = assetPath.endsWith("mp4");
+
+      if (!isImage) return;
+
+      const assetMesh = new MyPlane(assetPath);
+      assetMesh.position.x = (Math.random() * 2 - 1) * 600;
+      assetMesh.position.y = (Math.random() * 2 - 1) * 600;
+      assetMesh.position.z = Math.random() * -100;
+
+      threeScene.add(assetMesh);
+
+      meshIds.push(assetMesh.id);
+    });
+
+    return meshIds;
   }
 }
 

@@ -63,11 +63,11 @@ class World {
 
     this.scene.background = new THREE.Color(random(palette));
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Soft light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Soft light
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4); // Strong directional light
-    directionalLight.position.set(100, 100, 100);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6); // Strong directional light
+    directionalLight.position.set(0, 0, 100);
     this.scene.add(directionalLight);
 
     // this.addBackground();
@@ -84,7 +84,9 @@ class World {
       antialias: true,
     });
     this.renderer.setSize(this.sizes.width, this.sizes.height);
-    this.renderer.shadowMap.enabled = true;
+    // this.renderer.shadowMap.enabled = true;
+    // this.renderer.toneMapping = THREE.NoToneMapping;
+    this.renderer.outputColorSpace = THREE.sRGBEncoding;
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
@@ -95,8 +97,32 @@ class World {
   }
 
   debug() {
-    const box = new THREE.BoxGeometry(10, 10, 10);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const box = new THREE.BoxGeometry(600, 600, 10);
+    // const texture = new THREE.TextureLoader().load(
+    //   // "https://raw.githubusercontent.com/opheliagame/work-images/refs/heads/main/20200624-movement-study.mp4"
+    //   "./images/20200624-movement-study.mp4"
+    // );
+
+    const video = document.createElement("video");
+    video.src =
+      // "https://opheliagame.github.io/work-images/20200624-movement-study.mp4";
+      "./images/20200624-movement-study.mp4";
+    // video.src =
+    //   "https://raw.githubusercontent.com/opheliagame/work-images/refs/heads/main/20200624-movement-study.mp4";
+    video.loop = true;
+    video.muted = true;
+    video.autoplay = true;
+    video.play();
+    console.log(video);
+    // document.appendChild(video);
+    const texture = new THREE.VideoTexture(video);
+    // texture.encoding = THREE.sRGBEncoding;
+    const material = new THREE.MeshBasicMaterial({
+      // color: 0x00ffffff,
+      map: texture,
+      // transparent: false,
+      // side: THREE.DoubleSide,
+    });
     const cube = new THREE.Mesh(box, material);
     this.scene.add(cube);
     cube.position.x = 0;

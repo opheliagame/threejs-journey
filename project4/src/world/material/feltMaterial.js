@@ -32,13 +32,14 @@ class FeltMaterial extends MeshStandardNodeMaterial {
     super();
 
     const textureLoader = new THREE.TextureLoader();
-    const perlinTexture = textureLoader.load("./images/rgb-256x256.png");
-    perlinTexture.wrapS = THREE.RepeatWrapping;
-    perlinTexture.wrapT = THREE.RepeatWrapping;
+    // const perlinTexture = textureLoader.load("./images/rgb-256x256.png");
+    // perlinTexture.wrapS = THREE.RepeatWrapping;
+    // perlinTexture.wrapT = THREE.RepeatWrapping;
 
-    const feltTexture = textureLoader.load("./images/grey-carpet.jpeg");
+    const feltTexture = textureLoader.load("./images/noise.png");
     feltTexture.wrapS = THREE.RepeatWrapping;
     feltTexture.wrapT = THREE.RepeatWrapping;
+    feltTexture.encoding = THREE.sRGBEncoding;
 
     // const wood = this.makeShader()
     // // const material = new MeshStandardNodeMaterial()

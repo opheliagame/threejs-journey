@@ -32,7 +32,7 @@ class Scene2 extends THREE.Group {
         console.log("making words");
         for (let word of this.words) {
           const randomColor = random(palette);
-          const material = new FeltMaterial(convertHexToVec3(randomColor), 100);
+          const material = new FeltMaterial(convertHexToVec3(randomColor), 1);
 
           const text = new My3DText(word, font, 100, 0, 0, 0, material);
           text.position.x = (Math.random() * 2 - 1) * 500;
@@ -40,6 +40,9 @@ class Scene2 extends THREE.Group {
           text.position.z = (Math.random() * 2 - 1) * 500;
 
           this.add(text);
+
+          const textEdge = text.getEdgesGeometry();
+          this.add(textEdge);
         }
 
         resolve();
