@@ -61,8 +61,6 @@ class World {
       time: { value: 1.0 },
     };
 
-    this.scene.background = new THREE.Color(random(palette));
-
     const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Soft light
     this.scene.add(ambientLight);
 

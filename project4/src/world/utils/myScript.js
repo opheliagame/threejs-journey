@@ -7,20 +7,42 @@ import MyTextFormatter from "./myTextFormatter";
 import { random } from "../../utils/math";
 import palette from "../../colors/palette";
 import FeltMaterial from "../material/feltMaterial";
-import { convertArrToVec3, convertHexToVec3 } from "../../utils/colors";
-import MyPlane from "../mesh/plane";
+import { convertHexToVec3 } from "../../utils/colors";
 
 class MyScript {
-  constructor(filePath, assetBasePath) {
+  constructor(filePath) {
     this.lines = [];
     this.currentIndex = 0;
     this.filePath = filePath;
     this.running = false;
     this.isLoaded = false;
-    this.assetBasePath = assetBasePath;
   }
 
-  load() {
+  loadJson() {
+    return new Promise((resolve, reject) => {
+      const fontLoader = new FontLoader();
+      fontLoader.load("fonts/Barriecito_Regular.json", (font) => {
+        this.font = font;
+
+        const loader = new THREE.FileLoader();
+        loader.load(
+          this.filePath,
+          function (text) {
+            this.lines = JSON.parse(text);
+
+            console.log("loaded script: ", this.lines);
+
+            console.log("script has ", this.lines.length, " lines");
+            this.isLoaded = true;
+
+            resolve();
+          }.bind(this)
+        );
+      });
+    });
+  }
+
+  loadText() {
     return new Promise((resolve, reject) => {
       const fontLoader = new FontLoader();
       fontLoader.load("fonts/Barriecito_Regular.json", (font) => {
@@ -34,39 +56,7 @@ class MyScript {
               .split("\n")
               .map((line) => line.trim())
               .map((line) => (line.length > 0 ? line : ""))
-              .map((line) => {
-                const parts = line.split(":");
-                let duration = 1,
-                  content = "",
-                  assets = [];
-
-                let hasDuration = !isNaN(parseFloat(parts[0]));
-
-                if (hasDuration) {
-                  duration = parts[0];
-                  if (parts.length > 1) {
-                    content = parts[1];
-                  }
-                } else {
-                  content = parts[0];
-                }
-
-                if (parts.length > 1 && !hasDuration) {
-                  // assets are parts[1]
-                  assets = parts[1].split(",").map((asset) => asset.trim());
-                }
-                if (parts.length > 1 && hasDuration) {
-                  // assets are parts[2]
-                  assets = parts[2].split(",").map((asset) => asset.trim());
-                }
-
-                return {
-                  content: content,
-                  duration: duration,
-                  assets: assets,
-                };
-              });
-
+              .map((line) => parseLine(line));
             console.log("loaded script: ", this.lines);
 
             console.log("script has ", this.lines.length, " lines");
@@ -77,6 +67,17 @@ class MyScript {
         );
       });
     });
+  }
+
+  parseLine(line) {
+    let parts = line.split(":");
+    if (parts.length <= 1) {
+      return { content: line, duration: 1 };
+    } else {
+      let part1 = parts[0];
+      let part2 = parts[1];
+      let part3 = parts.length > 2 ? parts[2] : null;
+    }
   }
 
   getLines() {
@@ -94,19 +95,18 @@ class MyScript {
   run(threeScene, sizes, camera) {
     return new Promise(async (resolve, reject) => {
       if (this.isLoaded == false) {
-        await this.load();
+        await this.loadJson();
       }
-      this.run1(threeScene, sizes, camera).then(() => {
+      this.runScript(threeScene, sizes, camera).then(() => {
         resolve();
       });
     });
   }
 
-  run1(threeScene, sizes, camera) {
+  runScript(threeScene, sizes, camera) {
     return new Promise((resolve, reject) => {
       if (this.currentIndex >= this.lines.length) {
         resolve();
-        return;
       }
 
       console.log("Running script");
@@ -114,13 +114,12 @@ class MyScript {
       console.log("Current line: ", this.getCurrentLine());
 
       const currentLine = this.getCurrentLine();
-      // threeScene.background = new THREE.Color(random(palette));
 
       this.animate(currentLine, threeScene, sizes, camera).then(() => {
-        threeScene.background = new THREE.Color(random(palette));
+        document.body.style.backgroundColor = random(palette);
         this.nextLine();
 
-        this.run(threeScene, sizes, camera).then(() => {
+        this.runScript(threeScene, sizes, camera).then(() => {
           resolve();
         });
       });
@@ -147,20 +146,9 @@ class MyScript {
       console.log("Formatted lines: ", lines);
       console.log("Formatted lines: ", screenCoords);
 
-      let paletteWithoutBackground = palette.filter(
-        (color) =>
-          color.replaceAll("#", "") !== threeScene.background.getHexString()
-      );
-      let randomColor = random(paletteWithoutBackground);
+      let randomColor = random(palette);
 
-      let color =
-        typeof randomColor == "string"
-          ? convertHexToVec3(randomColor)
-          : convertArrToVec3(randomColor);
-      let material = new FeltMaterial(color, 1);
-      // let material = new THREE.MeshStandardMaterial({
-      //   color: randomColor,
-      // });
+      let material = new FeltMaterial(convertHexToVec3(randomColor), 100);
 
       lines.forEach((formattedLine, index) => {
         console.log("Adding line ", index, formattedLine);
@@ -188,17 +176,7 @@ class MyScript {
         meshIds.push(textEdge.id);
       });
 
-      if (line.assets.length > 0) {
-        const assetMeshIds = this.animateAssets(
-          line.assets,
-          threeScene,
-          sizes,
-          camera
-        );
-        meshIds = meshIds.concat(assetMeshIds);
-      }
-
-      const sceneDuration = line.duration;
+      const sceneDuration = line.duration ?? 1;
       // pan the camera to a random point
       const panTo = new THREE.Vector3(
         (Math.random() * 2 - 1) * 100,
@@ -206,6 +184,8 @@ class MyScript {
         Math.random() * 2
       );
       camera.pan(panTo, sceneDuration);
+
+      this.drawMedia(line.media ?? []);
 
       setTimeout(() => {
         for (let i = 0; i < meshIds.length; i++) {
@@ -223,31 +203,35 @@ class MyScript {
     });
   }
 
-  animateAssets(assets, threeScene, sizes, camera) {
-    let meshIds = [];
+  async drawMedia(media) {
+    const parentContainer = document.querySelector(".media-container");
+    parentContainer.innerHTML = "";
 
-    assets.forEach((asset) => {
-      const assetPath = `${this.assetBasePath}/${asset}`;
-      const isImage =
-        assetPath.endsWith("png") ||
-        assetPath.endsWith("jpg") ||
-        assetPath.endsWith("jpeg");
+    media
+      .sort((a, b) => Math.random())
+      .forEach((fileName) => {
+        console.log(fileName);
 
-      const isVideo = assetPath.endsWith("mp4");
+        if (
+          fileName.endsWith("jpg") ||
+          fileName.endsWith("jpeg") ||
+          fileName.endsWith("png")
+        ) {
+          let image = document.createElement("img");
+          image.src = `./images/${fileName}`;
+          parentContainer.appendChild(image);
+        }
 
-      if (!isImage) return;
-
-      const assetMesh = new MyPlane(assetPath);
-      assetMesh.position.x = (Math.random() * 2 - 1) * 600;
-      assetMesh.position.y = (Math.random() * 2 - 1) * 600;
-      assetMesh.position.z = Math.random() * -100;
-
-      threeScene.add(assetMesh);
-
-      meshIds.push(assetMesh.id);
-    });
-
-    return meshIds;
+        if (fileName.endsWith("mp4")) {
+          let video = document.createElement("video");
+          // TODO change folder name to more general "media"
+          video.src = `./images/${fileName}`;
+          video.autoplay = true;
+          video.volume = 0;
+          video.loop = true;
+          parentContainer.appendChild(video);
+        }
+      });
   }
 }
 

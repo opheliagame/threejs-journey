@@ -22,3 +22,4 @@ I l(a)ive code visuals: some images
 sometimes alone: twitch 
 sometimes with shaders: shader images 
 a lot of times with other live coders: co coding images 
+

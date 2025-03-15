@@ -8,11 +8,7 @@ class SceneSequencer {
     this.camera = camera;
 
     this.scenes = [
-      new MyScript(
-        "script.txt",
-        // "https://raw.githubusercontent.com/opheliagame/work-images/refs/heads/main"
-        "https://opheliagame.github.io/work-images/"
-      ),
+      new MyScript("script.json", "https://opheliagame.github.io/work-images/"),
       new Scene2(),
     ];
     // this.scenes = [new Scene2()];
