@@ -178,11 +178,10 @@ class MyScript {
 
       const sceneDuration = line.duration ?? 1;
       // pan the camera to a random point
-      const panTo = new THREE.Vector3(
-        (Math.random() * 2 - 1) * 100,
-        (Math.random() * 2 - 1) * 100,
-        Math.random() * 2
-      );
+      let endx = (Math.random() * 2 - 1) * 100 + 40;
+      let endy = 0;
+      let endz = Math.random() * 2;
+      const panTo = new THREE.Vector3(endx, endy, endz);
       camera.pan(panTo, sceneDuration);
 
       this.drawMedia(line.media ?? []);

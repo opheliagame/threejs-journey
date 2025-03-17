@@ -46,15 +46,7 @@ class World {
     );
     this.camera.setPosition(0, 0, 1000);
     this.camera.lookAt(0, 0, 0);
-    // this.camera = new THREE.OrthographicCamera(
-    //   this.sizes.width / -2,
-    //   this.sizes.width / 2,
-    //   this.sizes.height / 2,
-    //   this.sizes.height / -2,
-    //   0.1,
-    //   10
-    // );
-    // this.camera.position.set(0, 0, 2);
+
     this.scene.add(this.camera);
 
     this.uniforms = {
@@ -86,10 +78,17 @@ class World {
     // this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.outputColorSpace = THREE.sRGBEncoding;
 
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-    // this.raycaster = new Raycaster(this.scene, this.camera)
+    this.raycaster = new THREE.Raycaster();
+    this.pointer = new THREE.Vector2();
+    this.intersected = null;
+    this.currentLink = null;
+    document.onpointermove = this.onPointerMove.bind(this);
+
     window.onresize = this.onWindowResize.bind(this);
+
+    document.querySelector("canvas").onclick = this.onClick.bind(this);
 
     // this.debug();
   }
@@ -149,24 +148,55 @@ class World {
     console.log("Resizing to ", this.sizes.width, this.sizes.height);
   }
 
+  onPointerMove(event) {
+    this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  }
+
+  onClick(event) {
+    console.log(`navigating to: ${this.currentLink}`);
+    window.location = this.currentLink;
+  }
+
   animate() {
     requestAnimationFrame(() => {
       this.animate();
     });
 
-    // if (this.script.lines.length > 0 && this.script.running == false) {
-    //   console.log("Running script");
-    //   this.script.run(this.scene, this.sizes, this.camera);
-    // }
-
     const t = this.clock.getElapsedTime();
     this.uniforms.time.value = t;
-    this.controls.enabled = false;
+    // this.controls.enabled = false;
     // this.controls.update();
 
     this.scene.traverse((obj) => {
       if (obj.render) obj.render(t);
     });
+
+    if (window.isVisited == true) {
+      let canvas = document.querySelector("canvas");
+      canvas.style.pointerEvents = "auto";
+      // find intersections
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const objects =
+        this.scene.children.length < 4
+          ? this.scene.children
+          : this.scene.children[3].children;
+
+      const intersects = this.raycaster.intersectObjects(objects, false);
+
+      if (intersects.length > 0) {
+        canvas.style.cursor = "pointer";
+
+        if (this.intersected != intersects[0].object) {
+          this.intersected = intersects[0].object;
+          this.currentLink = intersects[0].object.userData.link;
+        }
+      } else {
+        this.intersected = null;
+        this.currentLink = null;
+        canvas.style.cursor = "default";
+      }
+    }
 
     this.render();
   }

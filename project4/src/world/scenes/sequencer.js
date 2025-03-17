@@ -7,11 +7,17 @@ class SceneSequencer {
     this.sizes = sizes;
     this.camera = camera;
 
-    this.scenes = [
-      new MyScript("script.json", "https://opheliagame.github.io/work-images/"),
-      new Scene2(),
-    ];
-    // this.scenes = [new Scene2()];
+    if (window.isVisited == true) {
+      this.scenes = [new Scene2()];
+    } else {
+      this.scenes = [
+        new MyScript(
+          "script.json",
+          "https://opheliagame.github.io/work-images/"
+        ),
+        new Scene2(),
+      ];
+    }
 
     this.currentSceneIndex = 0;
   }

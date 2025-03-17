@@ -10,14 +10,16 @@ class Scene2 extends THREE.Group {
   constructor() {
     super();
     this.isLoaded = false;
-    this.words = [
-      "code",
-      "poems",
-      "tools",
-      "community",
-      "performance",
-      "archives",
-      "software",
+    this.items = [
+      { text: "opheliagame", link: "/" },
+      { text: "code", link: "/notes-garden" },
+      { text: "projects", link: "/notes-garden/projects" },
+      { text: "poems", link: "/notes-garden/poems" },
+      { text: "tools", link: "/notes-garden" },
+      { text: "community", link: "/notes-garden" },
+      // { text: "performance", link: "/notes-garden" },
+      { text: "archives", link: "/notes-garden" },
+      { text: "software", link: "/notes-garden" },
     ];
   }
 
@@ -30,16 +32,23 @@ class Scene2 extends THREE.Group {
         this.isLoaded = true;
 
         console.log("making words");
-        for (let word of this.words) {
+        let x = window.innerWidth > 1000 ? -200 : 0;
+        let y = 500;
+        for (let item of this.items) {
           const randomColor = random(palette);
           const material = new FeltMaterial(convertHexToVec3(randomColor), 100);
 
-          const text = new My3DText(word, font, 100, 0, 0, 0, material);
-          text.position.x = (Math.random() * 2 - 1) * 500;
-          text.position.y = (Math.random() * 2 - 1) * 500;
-          text.position.z = (Math.random() * 2 - 1) * 500;
-
+          const text = new My3DText(item.text, font, 100, 0, 0, 0, material);
+          text.position.x = x;
+          text.position.y = y;
+          text.position.z = 10;
+          text.userData = item;
           this.add(text);
+
+          if (window.innerWidth > 1000) {
+            x += 100;
+          }
+          y -= 150;
         }
 
         resolve();
