@@ -18,7 +18,7 @@
   <body>
     <header>
       <nav>
-        <a href="/">
+        <a href="./">
           <h1>opheliagame's Three.js examples</h1>
         </a>
 
@@ -60,7 +60,7 @@
         const item = event.target;
 
         const title = item.dataset.title;
-        const sketchPath = `/examples/${title}.html`;
+        const sketchPath = `./examples/${title}.html`;
         sketchIframe.src = sketchPath;
       }
 
