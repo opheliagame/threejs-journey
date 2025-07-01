@@ -1,0 +1,50 @@
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 250px auto;
+  grid-template-rows: 1fr;
+}
+
+header {
+  background-color: plum;
+  padding: 2rem 1rem;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+nav li {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+main {
+  background-color: lawngreen;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+}
+
+/* Typography */
+h1 {
+  font-size: 1.2rem;
+}

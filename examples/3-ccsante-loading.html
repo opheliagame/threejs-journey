@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>opheliagame - Three.js examples - ccsante loading animation</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <link rel="stylesheet" href="../normalize.css" />
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.177.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+
+      import Stats from "three/addons/libs/stats.module.js";
+      import { Flyer } from "../lib/mesh/cell.js";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      let container, stats;
+
+      let camera, scene, renderer;
+
+      let controls, clock;
+
+      init();
+
+      function init() {
+        container = document.createElement("div");
+        document.body.appendChild(container);
+
+        clock = new THREE.Clock();
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+
+        let res = 4;
+        camera = new THREE.OrthographicCamera(-res, res, -res, res, 1, 10);
+        camera.position.set(0, 0, 1);
+        scene.add(camera);
+
+        scene.background = new THREE.Color(0x000000);
+
+        const light = new THREE.AmbientLight(0xffffff);
+        camera.add(light);
+
+        // add objects
+        let data =
+          "1.6,-0.6000000000000001;1.5,-0.5;-1.8,-0.30000000000000004;-1.7,-0.30000000000000004;-1.6,-0.30000000000000004;-1.2,-0.30000000000000004;-1.1,-0.30000000000000004;-0.6000000000000001,-0.30000000000000004;-0.5,-0.30000000000000004;-0.3999999999999999,-0.30000000000000004;-0.10000000000000009,-0.30000000000000004;0,-0.30000000000000004;0.10000000000000009,-0.30000000000000004;0.3999999999999999,-0.30000000000000004;0.7000000000000002,-0.30000000000000004;0.8999999999999999,-0.30000000000000004;1,-0.30000000000000004;1.1,-0.30000000000000004;1.2000000000000002,-0.30000000000000004;1.4,-0.30000000000000004;1.5,-0.30000000000000004;1.6,-0.30000000000000004;1.7000000000000002,-0.30000000000000004;-1.9,-0.19999999999999996;-1.5,-0.19999999999999996;-1.3,-0.19999999999999996;-1,-0.19999999999999996;-0.7,-0.19999999999999996;-0.19999999999999996,-0.19999999999999996;0.20000000000000018,-0.19999999999999996;0.3999999999999999,-0.19999999999999996;0.5,-0.19999999999999996;0.7000000000000002,-0.19999999999999996;1.1,-0.19999999999999996;1.4,-0.19999999999999996;-1.9,-0.10000000000000009;-1.5,-0.10000000000000009;-1.3,-0.10000000000000009;-1,-0.10000000000000009;-0.7,-0.10000000000000009;-0.19999999999999996,-0.10000000000000009;0.20000000000000018,-0.10000000000000009;0.3999999999999999,-0.10000000000000009;0.5,-0.10000000000000009;0.7000000000000002,-0.10000000000000009;1.1,-0.10000000000000009;1.4,-0.10000000000000009;-1.9,0;-1.3,0;-0.6000000000000001,0;-0.5,0;-0.19999999999999996,0;-0.10000000000000009,0;0,0;0.10000000000000009,0;0.20000000000000018,0;0.3999999999999999,0;0.6000000000000001,0;0.7000000000000002,0;1.1,0;1.4,0;1.5,0;1.6,0;-1.9,0.10000000000000009;-1.5,0.10000000000000009;-1.3,0.10000000000000009;-1,0.10000000000000009;-0.3999999999999999,0.10000000000000009;-0.19999999999999996,0.10000000000000009;0.20000000000000018,0.10000000000000009;0.3999999999999999,0.10000000000000009;0.7000000000000002,0.10000000000000009;1.1,0.10000000000000009;1.4,0.10000000000000009;-1.8,0.20000000000000018;-1.7,0.20000000000000018;-1.6,0.20000000000000018;-1.2,0.20000000000000018;-1.1,0.20000000000000018;-0.7,0.20000000000000018;-0.6000000000000001,0.20000000000000018;-0.5,0.20000000000000018;-0.19999999999999996,0.20000000000000018;0.20000000000000018,0.20000000000000018;0.3999999999999999,0.20000000000000018;0.7000000000000002,0.20000000000000018;1.1,0.20000000000000018;1.4,0.20000000000000018;1.5,0.20000000000000018;1.6,0.20000000000000018;1.7000000000000002,0.20000000000000018;";
+        let items = data.split(";");
+        let nItems = items.length;
+        for (let i = 0; i < nItems; i++) {
+          let d = items[i].split(",");
+          let destx = d[0] * 6;
+          let desty = d[1] * 6;
+
+          let rVector = new THREE.Vector2(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1
+          ).multiplyScalar(2);
+          let dirVector = new THREE.Vector2(destx, desty)
+            .normalize()
+            .multiplyScalar(12)
+            .add(rVector);
+
+          let startx = dirVector.x;
+          let starty = dirVector.y;
+
+          // let mesh = new Flyer({startx: startx, starty: -starty, destx: destx, desty: -desty})
+          let mesh = new Flyer({
+            startx: destx,
+            starty: -desty,
+            destx: destx,
+            desty: -desty,
+          });
+          // mesh.addWing({pos: "left", mesh: leftWing.clone()})
+          // mesh.addWing({pos: "right", mesh: rightWing.clone()})
+
+          // console.log(mesh)
+
+          scene.add(mesh);
+        }
+
+        //
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setAnimationLoop(animate);
+        container.appendChild(renderer.domElement);
+
+        controls = new OrbitControls(camera, renderer.domElement);
+
+        stats = new Stats();
+        container.appendChild(stats.dom);
+
+        container.style.touchAction = "none";
+
+        //
+
+        window.addEventListener("resize", onWindowResize);
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      //
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        controls.update();
+
+        render();
+        stats.update();
+      }
+
+      function render() {
+        renderer.render(scene, camera);
+      }
+    </script>
+  </body>
+</html>

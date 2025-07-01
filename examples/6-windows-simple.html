@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>opheliagame - Three.js examples - my room</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <link rel="stylesheet" href="../normalize.css" />
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.webgpu.js",
+          "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.webgpu.js",
+          "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.tsl.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.177.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { color } from "three/tsl";
+
+      import Stats from "three/addons/libs/stats.module.js";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      let container, stats;
+
+      let camera, scene, renderer;
+
+      let controls, clock;
+
+      let tslNodeLights, textures, contourTextures;
+
+      init();
+
+      function init() {
+        container = document.createElement("div");
+        document.body.appendChild(container);
+
+        clock = new THREE.Clock();
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+
+        camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight
+        );
+        camera.position.set(0, 0, 1);
+        scene.add(camera);
+
+        // add objects
+        loadTextures().then(() => {
+          addObjects();
+        });
+
+        //
+
+        renderer = new THREE.WebGPURenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setAnimationLoop(animate);
+        container.appendChild(renderer.domElement);
+
+        controls = new OrbitControls(camera, renderer.domElement);
+
+        stats = new Stats();
+        container.appendChild(stats.dom);
+
+        container.style.touchAction = "none";
+
+        //
+
+        window.addEventListener("resize", onWindowResize);
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      //
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        controls.update();
+
+        const t = clock.getElapsedTime() * 2;
+        const rotationY = t * 0.1;
+        camera.rotateY(rotationY);
+
+        render();
+        stats.update();
+      }
+
+      function render() {
+        renderer.render(scene, camera);
+      }
+
+      async function loadTextures() {
+        // TEXTURE LIGHTS
+        const whiteLight = addLight(0xffffff);
+        const yellowLight = addLight(0x808000);
+        const purpleLight = addLight(0x800080);
+        const orangeLight = addLight(0x808000);
+        tslNodeLights = [yellowLight, purpleLight, orangeLight];
+
+        const textureLoader = new THREE.TextureLoader();
+
+        // LOADING IMAGES
+        textures = [];
+        for (let i = 1; i <= 33; i++) {
+          const texture = await textureLoader.loadAsync(
+            `assets/grayscale/gray_${i}.jpg`
+          );
+          texture.flipY = false;
+          // prevents images from looking washed out
+          texture.colorSpace = THREE.SRGBColorSpace;
+          // for crisp textures
+          texture.minFilter = THREE.NearestFilter;
+          texture.magFilter = THREE.NearestFilter;
+
+          const material = new THREE.MeshPhongNodeMaterial({
+            map: texture,
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            opacity: 0.1,
+          });
+          material.lightsNode = lights([whiteLight]);
+          this.textures.push(material);
+        }
+
+        // LOADING CONTOUR TEXTURES
+        contourTextures = [];
+        const alphaTexture = await new THREE.TextureLoader().loadAsync(
+          "assets/textures/roughness_map.jpg"
+        );
+        alphaTexture.wrapS = THREE.RepeatWrapping;
+        alphaTexture.wrapT = THREE.RepeatWrapping;
+        for (let i = 1; i <= 33; i++) {
+          const tex = await textureLoader.loadAsync(
+            `assets/contour/contour_${i}.png`
+          );
+          tex.flipY = false;
+          // prevents images from looking washed out
+          tex.colorSpace = THREE.SRGBColorSpace;
+          // for crisp textures
+          tex.minFilter = THREE.NearestFilter;
+          tex.magFilter = THREE.NearestFilter;
+
+          const material = new THREE.MeshPhongNodeMaterial({
+            map: tex,
+            color: 0xffffff,
+            side: THREE.BackSide,
+            transparent: true,
+          });
+
+          // material.lightsNode = lights([yellowLight, purpleLight, orangeLight]);
+          // material.roughnessNode = texture(alphaTexture);
+          // material.metalness = 1;
+          contourTextures.push(material);
+        }
+      }
+
+      function addObjects() {
+        const simplesphere = new SimpleSphereDecomposed({
+          radius: 2,
+          textures: this.textures,
+        });
+        simplesphere.position.set(0, 0, 0);
+        scene.add(simplesphere);
+
+        const simplesphere1 = new SimpleSphereDecomposed({
+          radius: 1.9,
+          textures: this.contourTextures,
+        });
+        simplesphere1.position.set(0, 0, 0);
+        scene.add(simplesphere1);
+
+        // DEBUG - random cubes with image textures
+        // for (let i = 0; i < 33; i++) {
+        //   const box = new THREE.BoxGeometry();
+        //   const mat = this.textures[i];
+        //   const cube = new THREE.Mesh(box, mat);
+        //   cube.position.set(
+        //     (Math.random() * 2 - 1) * 10,
+        //     (Math.random() * 2 - 1) * 10,
+        //     (Math.random() * 2 - 1) * 1
+        //   );
+        //   this.scene.add(cube);
+        // }
+      }
+
+      function addLight(hexColor, power = 1700, distance = 100) {
+        const material = new THREE.MeshStandardNodeMaterial();
+        material.colorNode = color(hexColor);
+        material.visible = false;
+        material.lights = false;
+
+        const sphereGeometry = new THREE.SphereGeometry(0.1, 16, 8);
+        const mesh = new THREE.Mesh(sphereGeometry, material);
+
+        const light = new THREE.PointLight(hexColor, 1, distance);
+        light.power = 50;
+        light.add(mesh);
+
+        scene.add(light);
+
+        return light;
+      }
+    </script>
+  </body>
+</html>

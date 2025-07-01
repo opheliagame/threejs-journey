@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>opheliagame - Three.js examples</title>
+
+    <link rel="stylesheet" href="main.css" />
+
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/">
+          <h1>opheliagame's Three.js examples</h1>
+        </a>
+
+        <!-- list of examples -->
+
+        <ul class="nav">
+          <a>
+            <li data-title="1-my-room">my room</li>
+          </a>
+          <a>
+            <li data-title="2-card-with-gsap">card with gsap</li>
+          </a>
+          <a>
+            <li data-title="3-ccsante-loading">ccsante loading animation</li>
+          </a>
+          <a>
+            <li data-title="4-tunnel">tunnel</li>
+          </a>
+          <a>
+            <li data-title="5-website-landing-movie">website landing movie</li>
+          </a>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <!-- show output of each example -->
+
+      <iframe
+        id="sketch-iframe"
+        src="./examples/1-my-room.html"
+        frameborder="0"
+      ></iframe>
+    </main>
+
+    <script>
+      function onClickExampleNavItem(event) {
+        const sketchIframe = document.querySelector("#sketch-iframe");
+        const item = event.target;
+
+        const title = item.dataset.title;
+        const sketchPath = `/examples/${title}.html`;
+        sketchIframe.src = sketchPath;
+      }
+
+      const nav = document.querySelector(".nav").children;
+      for (let i = 0; i < nav.length; i++) {
+        const item = nav[i];
+        item.onclick = onClickExampleNavItem;
+
+        // const title = item.dataset.title
+        // const sketchPath = `/examples/${title}.html`
+        // sketchIframe.src = sketchPath
+      }
+    </script>
+  </body>
+</html>
