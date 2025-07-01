@@ -56,7 +56,7 @@
         camera.add(light);
 
         const loader = new GLTFLoader();
-        loader.load("/assets/model/room.glb", function (glb) {
+        loader.load("./assets/model/room.glb", function (glb) {
           console.log("loaded glb mobel");
 
           glb.scene.position.x = 0.5;
