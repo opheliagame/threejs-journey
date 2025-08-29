@@ -1,3 +1,18 @@
+@font-face {
+  font-family: Sligoil;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://opheliagame.github.io/garden/static/Sligoil-Micro.woff2)
+    format("woff2");
+}
+
+* {
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 html,
 body {
   margin: 0px;
@@ -5,7 +20,7 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: "Inter", sans-serif;
+  font-family: "Sligoil", Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -15,7 +30,7 @@ body {
 }
 
 header {
-  background-color: plum;
+  background-color: var(--light);
   padding: 2rem 1rem;
 }
 
@@ -31,12 +46,15 @@ nav ul {
 }
 
 nav li {
+  margin: 8px 0;
   cursor: pointer;
   text-decoration: underline;
+  font-size: small;
+  color: var(--secondary);
 }
 
 main {
-  background-color: lawngreen;
+  background-color: var(--light);
 }
 
 iframe {
