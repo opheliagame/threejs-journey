@@ -21,6 +21,12 @@
       }
     </script>
 
+    <script>
+      window.BASE_PATH = window.location.hostname.includes("github.io")
+        ? "/threejs-journey/"
+        : "/";
+    </script>
+
     <script type="module">
       import * as THREE from "three";
       import { color } from "three/tsl";

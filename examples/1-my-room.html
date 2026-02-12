@@ -19,6 +19,12 @@
       }
     </script>
 
+    <script>
+      window.BASE_PATH = window.location.hostname.includes("github.io")
+        ? "/threejs-journey/"
+        : "/";
+    </script>
+
     <script type="module">
       import * as THREE from "three";
 
@@ -56,7 +62,7 @@
         camera.add(light);
 
         const loader = new GLTFLoader();
-        loader.load("assets/model/room.glb", function (glb) {
+        loader.load(window.BASE_PATH + "assets/model/room.glb", function (glb) {
           console.log("loaded glb mobel");
 
           glb.scene.position.x = 0.5;
