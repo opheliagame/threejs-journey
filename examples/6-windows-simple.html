@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>opheliagame - Three.js examples - my room</title>
@@ -49,7 +49,7 @@
 
         camera = new THREE.PerspectiveCamera(
           75,
-          window.innerWidth / window.innerHeight
+          window.innerWidth / window.innerHeight,
         );
         camera.position.set(0, 0, 1);
         scene.add(camera);
@@ -119,7 +119,7 @@
         textures = [];
         for (let i = 1; i <= 33; i++) {
           const texture = await textureLoader.loadAsync(
-            `./assets/grayscale/gray_${i}.jpg`
+            `./assets/grayscale/gray_${i}.jpg`,
           );
           texture.flipY = false;
           // prevents images from looking washed out
@@ -141,13 +141,13 @@
         // LOADING CONTOUR TEXTURES
         contourTextures = [];
         const alphaTexture = await new THREE.TextureLoader().loadAsync(
-          "./assets/textures/roughness_map.jpg"
+          "./assets/textures/roughness_map.jpg",
         );
         alphaTexture.wrapS = THREE.RepeatWrapping;
         alphaTexture.wrapT = THREE.RepeatWrapping;
         for (let i = 1; i <= 33; i++) {
           const tex = await textureLoader.loadAsync(
-            `./assets/contour/contour_${i}.png`
+            `./assets/contour/contour_${i}.png`,
           );
           tex.flipY = false;
           // prevents images from looking washed out

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>opheliagame - Three.js examples - ccsante loading animation</title>
@@ -14,7 +14,9 @@
       {
         "imports": {
           "three": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.177.0/examples/jsm/"
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.177.0/examples/jsm/",
+          "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.webgpu.js",
+          "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.177.0/build/three.tsl.js"
         }
       }
     </script>
@@ -66,7 +68,7 @@
 
           let rVector = new THREE.Vector2(
             Math.random() * 2 - 1,
-            Math.random() * 2 - 1
+            Math.random() * 2 - 1,
           ).multiplyScalar(2);
           let dirVector = new THREE.Vector2(destx, desty)
             .normalize()
